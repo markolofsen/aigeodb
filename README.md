@@ -21,6 +21,7 @@ Developed by [Unrealos Inc.](https://unrealos.com/) - We create innovative SaaS 
 
 ## Installation
 
+Basic installation:
 ```bash
 pip install aigeodb
 ```
@@ -62,6 +63,12 @@ cities = db.search_cities("Moscow", limit=5)
 # Get country information
 country = db.get_country_info("US")
 
+# Calculate distance between two points
+new_york = (40.7128, -74.0060)  # (latitude, longitude)
+london = (51.5074, -0.1278)
+distance = db.calculate_distance(new_york, london)
+print(f"Distance between cities: {distance:.1f}km")
+
 # Find nearby cities (simple usage)
 cities = db.get_nearby_cities(
     latitude=40.7128, 
@@ -93,6 +100,25 @@ states = db.get_states_by_country("US")
 stats = db.get_statistics()
 ```
 
+### Distance Calculation
+
+The package uses [geopy](https://geopy.readthedocs.io/) for precise distance calculations using the geodesic formula. Coordinates are passed as tuples of (latitude, longitude).
+
+Example distances:
+```python
+# Some major city coordinates
+new_york = (40.7128, -74.0060)
+london = (51.5074, -0.1278)
+paris = (48.8566, 2.3522)
+tokyo = (35.6762, 139.6503)
+seoul = (37.5665, 126.9780)
+
+# Calculate distances
+print(f"New York to London: {db.calculate_distance(new_york, london):.1f}km")  # ~5,570km
+print(f"Paris to Tokyo: {db.calculate_distance(paris, tokyo):.1f}km")  # ~9,713km
+print(f"Tokyo to Seoul: {db.calculate_distance(tokyo, seoul):.1f}km")  # ~1,160km
+```
+
 ### Database Content
 
 The package includes:
@@ -102,9 +128,12 @@ The package includes:
 - States/Regions/Municipalities (5,038 records)
 - Cities/Towns/Districts (151,072 records)
 
+
+---
+
 ## Django Integration
 
-If you're using Django, AigeoDB provides custom model fields with autocomplete support.
+AigeoDB provides Django model fields with Select2-powered autocomplete support for cities and countries. The integration includes custom widgets with dark mode support and AJAX search functionality.
 
 ### Setup
 
@@ -116,60 +145,144 @@ INSTALLED_APPS = [
 ]
 ```
 
-2. Add URLs:
+2. Add URLs to your project's urls.py:
 ```python
 from django.urls import path, include
 
 urlpatterns = [
     ...
-    path('', include('aigeodb.django.urls')),  # URLs already include 'aigeodb/' prefix
+    path('aigeodb/', include('aigeodb.django.urls')),
 ]
+```
+
+3. Make sure you have static files configured:
+```python
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+```
+
+4. Run collectstatic:
+```bash
+python manage.py collectstatic
 ```
 
 ### Using Fields
 
 ```python
 from django.db import models
-from aigeodb.django.fields import CityField, CountryField
+from aigeodb.django import CityField, CountryField
 
 class Location(models.Model):
-    # Required fields
     city = CityField()
     country = CountryField()
     
-    # Optional fields
-    optional_city = CityField(null=True, blank=True)
-    optional_country = CountryField(null=True, blank=True)
+    # Fields can be optional
+    departure_city = CityField(null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.city.name}, {self.country.name}"
 ```
 
 ### Admin Integration
 
+The fields work automatically in Django admin with Select2 widgets:
+
 ```python
 from django.contrib import admin
+from aigeodb.django import AutocompleteFieldsMixin
 
 @admin.register(Location)
-class LocationAdmin(admin.ModelAdmin):
-    list_display = ('get_city_name', 'get_country_name', 'get_optional_city_name')
-    search_fields = ('city', 'country', 'optional_city', 'optional_country')
-    
-    def get_city_name(self, obj):
-        city_data = obj.city.get_data()
-        return f"{city_data['name']}, {city_data['country_code']}"
-    
-    def get_country_name(self, obj):
-        country_data = obj.country.get_data()
-        return country_data['name']
-        
-    def get_optional_city_name(self, obj):
-        if obj.optional_city:
-            city_data = obj.optional_city.get_data()
-            return f"{city_data['name']}, {city_data['country_code']}"
-        return '-'
-    
-    get_city_name.short_description = 'City'
-    get_country_name.short_description = 'Country'
-    get_optional_city_name.short_description = 'Optional City'
+class LocationAdmin(AutocompleteFieldsMixin, admin.ModelAdmin):
+    list_display = ('city', 'country')
+    search_fields = ('city__name', 'country__name')
 ```
+
+### Features
+
+- Built-in Select2 integration with AJAX search
+- Automatic dark/light theme support
+- Efficient data loading with caching
+- Built-in data validation
+- Responsive design
+- Support for Django admin inlines
+- Thread-safe database access
+
+### Widget Customization
+
+The fields use custom Select2 widgets that can be customized:
+
+```python
+from django.db import models
+from aigeodb.django import CityField, CountryField
+
+class Location(models.Model):
+    city = CityField(
+        widget_attrs={
+            'data-placeholder': 'Search for a city...',
+            'data-minimum-input-length': '3',
+            'class': 'custom-select'
+        }
+    )
+    country = CountryField(
+        widget_attrs={
+            'data-placeholder': 'Select a country',
+            'style': 'width: 100%'
+        }
+    )
+```
+
+### API Endpoints
+
+The package provides two AJAX endpoints:
+
+- `/aigeodb/search-cities/`
+  - Parameters:
+    - `term`: Search query (min 2 characters)
+    - `page`: Page number for pagination
+  - Returns:
+    ```json
+    {
+        "results": [
+            {
+                "id": "123",
+                "text": "New York, United States"
+            }
+        ],
+        "pagination": {
+            "more": false
+        }
+    }
+    ```
+
+- `/aigeodb/search-countries/`
+  - Parameters:
+    - `term`: Search query (min 2 characters)
+    - `page`: Page number for pagination
+  - Returns:
+    ```json
+    {
+        "results": [
+            {
+                "id": "US",
+                "text": "United States"
+            }
+        ],
+        "pagination": {
+            "more": false
+        }
+    }
+    ```
+
+### Static Files
+
+The package includes:
+- `aigeodb/js/autocomplete-init.js` - Select2 initialization
+- `aigeodb/css/autocomplete-theme.css` - Theme styles with dark mode
+
+These files are automatically included when using `AutocompleteFieldsMixin`.
 
 ## License
 

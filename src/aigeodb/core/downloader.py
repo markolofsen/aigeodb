@@ -1,6 +1,7 @@
-import requests
-from pathlib import Path
 import logging
+from pathlib import Path
+
+import requests
 
 
 class DatabaseDownloader:
@@ -13,17 +14,16 @@ class DatabaseDownloader:
         "regions.sqlite3",
         "states.sqlite3",
         "subregions.sqlite3",
-        "world.sqlite3"
+        "world.sqlite3",
     ]
 
     def __init__(self):
-        self.base_dir = Path(__file__).parent.parent / 'sqlite'
+        self.base_dir = Path(__file__).parent.parent / "sqlite"
         self.base_dir.mkdir(exist_ok=True)
 
         # Setup logging
         logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(levelname)s - %(message)s'
+            level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
         )
         self.logger = logging.getLogger(__name__)
 
@@ -31,14 +31,14 @@ class DatabaseDownloader:
         """Download a file from the repository."""
         url = f"{self.BASE_URL}/{filename}"
         local_path = self.base_dir / filename
-        temp_path = local_path.with_suffix('.tmp')
+        temp_path = local_path.with_suffix(".tmp")
 
         try:
             self.logger.info(f"Downloading {filename}...")
             response = requests.get(url, stream=True)
             response.raise_for_status()
 
-            with open(temp_path, 'wb') as f:
+            with open(temp_path, "wb") as f:
                 for chunk in response.iter_content(chunk_size=8192):
                     if chunk:
                         f.write(chunk)

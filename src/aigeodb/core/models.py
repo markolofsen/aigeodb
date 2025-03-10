@@ -1,13 +1,23 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Float, ForeignKey, Text
+from datetime import datetime
+
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from datetime import datetime
 
 Base = declarative_base()
 
 
 class Country(Base):
-    __tablename__ = 'countries'
+    __tablename__ = "countries"
 
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
@@ -43,7 +53,7 @@ class Country(Base):
 
 
 class Region(Base):
-    __tablename__ = 'regions'
+    __tablename__ = "regions"
 
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
@@ -58,12 +68,12 @@ class Region(Base):
 
 
 class Subregion(Base):
-    __tablename__ = 'subregions'
+    __tablename__ = "subregions"
 
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
     translations = Column(Text)
-    region_id = Column(Integer, ForeignKey('regions.id'), nullable=False)
+    region_id = Column(Integer, ForeignKey("regions.id"), nullable=False)
     created_at = Column(DateTime)
     updated_at = Column(DateTime, default=datetime.utcnow)
     flag = Column(Boolean, default=True)
@@ -74,11 +84,11 @@ class Subregion(Base):
 
 
 class State(Base):
-    __tablename__ = 'states'
+    __tablename__ = "states"
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
-    country_id = Column(Integer, ForeignKey('countries.id'), nullable=False)
+    country_id = Column(Integer, ForeignKey("countries.id"), nullable=False)
     country_code = Column(String(2), nullable=False)
     fips_code = Column(String(255))
     iso2 = Column(String(255))
@@ -98,13 +108,13 @@ class State(Base):
 
 
 class City(Base):
-    __tablename__ = 'cities'
+    __tablename__ = "cities"
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
-    state_id = Column(Integer, ForeignKey('states.id'), nullable=False)
+    state_id = Column(Integer, ForeignKey("states.id"), nullable=False)
     state_code = Column(String(255), nullable=False)
-    country_id = Column(Integer, ForeignKey('countries.id'), nullable=False)
+    country_id = Column(Integer, ForeignKey("countries.id"), nullable=False)
     country_code = Column(String(2), nullable=False)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
@@ -116,4 +126,3 @@ class City(Base):
     # Relationships
     country = relationship("Country", back_populates="cities")
     state = relationship("State", back_populates="cities")
-

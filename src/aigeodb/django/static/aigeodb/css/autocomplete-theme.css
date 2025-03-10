@@ -1,0 +1,250 @@
+/* Select2 Theme Overrides */
+
+/* Light theme variables */
+:root {
+    --select2-bg: #fff;
+    --select2-text: #333;
+    --select2-border: #ccc;
+    --select2-hover-bg: #f0f0f0;
+    --select2-hover-text: #333;
+    --select2-selected-bg: #e4e4e4;
+    --select2-placeholder: #999;
+    --select2-dropdown-bg: #fff;
+    --select2-result-hover: #f5f5f5;
+    --select2-focus-border: #2271b1;
+    --select2-header-bg: #f8f8f8;
+    --select2-header-text: #333;
+}
+
+/* Dark theme variables */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --select2-bg: #1f1f1f;
+        --select2-text: #e0e0e0;
+        --select2-border: #444;
+        --select2-hover-bg: #2c2c2c;
+        --select2-hover-text: #fff;
+        --select2-selected-bg: #2d2d2d;
+        --select2-placeholder: #999;
+        --select2-dropdown-bg: #1a1a1a;
+        --select2-result-hover: #2a2a2a;
+        --select2-focus-border: #3584e4;
+        --select2-header-bg: #282828;
+        --select2-header-text: #e0e0e0;
+    }
+}
+
+/* Select2 container */
+.select2-container--default .select2-selection--single {
+    background-color: var(--select2-bg) !important;
+    border-color: var(--select2-border) !important;
+    color: var(--select2-text) !important;
+}
+
+/* Selection text */
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: var(--select2-text) !important;
+}
+
+/* Placeholder */
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: var(--select2-placeholder) !important;
+}
+
+/* Arrow */
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: var(--select2-border) transparent transparent transparent !important;
+}
+
+/* Dropdown */
+.select2-container--default .select2-dropdown {
+    background-color: var(--select2-dropdown-bg) !important;
+    border-color: var(--select2-border) !important;
+}
+
+/* Dropdown results */
+.select2-container--default .select2-results__option {
+    color: var(--select2-text) !important;
+}
+
+/* Hover state */
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: var(--select2-result-hover) !important;
+    color: var(--select2-hover-text) !important;
+}
+
+/* Selected state */
+.select2-container--default .select2-results__option[aria-selected=true] {
+    background-color: var(--select2-selected-bg) !important;
+}
+
+/* Search input */
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    background-color: var(--select2-bg) !important;
+    border-color: var(--select2-border) !important;
+    color: var(--select2-text) !important;
+}
+
+/* Focused container */
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: var(--select2-focus-border) !important;
+}
+
+/* Group headers */
+.select2-container--default .select2-results__group {
+    background-color: var(--select2-header-bg) !important;
+    color: var(--select2-header-text) !important;
+    padding: 6px !important;
+    font-weight: bold !important;
+}
+
+/* Custom styles for better UX */
+.select2-container--default .select2-selection--single {
+    height: 30px !important;
+    line-height: 28px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 28px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 28px !important;
+}
+
+/* Fix for Django admin */
+.select2-container {
+    min-width: 250px !important;
+}
+
+/* Make it full width in field containers */
+.field-origin_city .select2-container,
+.field-destination_city .select2-container,
+.field-country .select2-container {
+    width: 100% !important;
+    max-width: 800px !important;
+}
+
+.select2-container--admin .select2-selection--single {
+    height: 30px;
+    padding: 2px 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.select2-container--admin .select2-selection--single .select2-selection__rendered {
+    line-height: 26px;
+    padding-left: 0;
+}
+
+.select2-container--admin .select2-selection--single .select2-selection__arrow {
+    height: 28px;
+}
+
+.select2-container--admin .select2-results__option--highlighted[aria-selected] {
+    background-color: #79aec8;
+}
+
+/* Dark mode support */
+[data-theme="dark"] .select2-container--admin .select2-selection--single {
+    background-color: #333;
+    border-color: #666;
+    color: #fff;
+}
+
+[data-theme="dark"] .select2-container--admin .select2-results__option {
+    background-color: #333;
+    color: #fff;
+}
+
+[data-theme="dark"] .select2-container--admin .select2-results__option--highlighted[aria-selected] {
+    background-color: #417690;
+}
+
+/* Dark theme for Select2 */
+.select2-container--admin-dark .select2-selection--single {
+    background-color: #1f1f1f !important;
+    border: 1px solid #444 !important;
+    color: #e0e0e0 !important;
+    height: 30px;
+}
+
+.select2-container--admin-dark .select2-selection--single .select2-selection__rendered {
+    color: #e0e0e0 !important;
+    line-height: 28px;
+    padding-left: 8px;
+}
+
+.select2-container--admin-dark .select2-selection--single .select2-selection__arrow {
+    height: 28px;
+}
+
+.select2-container--admin-dark .select2-selection--single .select2-selection__arrow b {
+    border-color: #e0e0e0 transparent transparent transparent !important;
+}
+
+/* Dropdown styles */
+.select2-container--admin-dark .select2-dropdown {
+    background-color: #1f1f1f !important;
+    border: 1px solid #444 !important;
+}
+
+.select2-container--admin-dark .select2-search--dropdown {
+    padding: 4px;
+}
+
+.select2-container--admin-dark .select2-search--dropdown .select2-search__field {
+    background-color: #2d2d2d !important;
+    border: 1px solid #444 !important;
+    color: #e0e0e0 !important;
+    padding: 4px 8px;
+}
+
+.select2-container--admin-dark .select2-results__option {
+    padding: 6px;
+    color: #e0e0e0 !important;
+}
+
+.select2-container--admin-dark .select2-results__option[aria-selected=true] {
+    background-color: #2d2d2d !important;
+}
+
+.select2-container--admin-dark .select2-results__option--highlighted[aria-selected] {
+    background-color: #417690 !important;
+    color: #ffffff !important;
+}
+
+/* Placeholder */
+.select2-container--admin-dark .select2-selection--single .select2-selection__placeholder {
+    color: #888 !important;
+}
+
+/* Container styles */
+.select-container {
+    margin: 4px 0;
+}
+
+/* Focus styles */
+.select2-container--admin-dark.select2-container--focus .select2-selection--single {
+    border-color: #417690 !important;
+    outline: none;
+}
+
+/* Loading state */
+.select2-container--admin-dark .select2-results__option.loading-results {
+    background-color: #1f1f1f !important;
+    color: #888 !important;
+}
+
+/* Error state */
+.select2-container--admin-dark.select2-container--open.select2-container--above .select2-selection--single,
+.select2-container--admin-dark.select2-container--open.select2-container--below .select2-selection--single {
+    border-color: #417690 !important;
+}
+
+/* Force dark theme */
+.admin-autocomplete + .select2-container--default {
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+} 

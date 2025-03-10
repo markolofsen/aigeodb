@@ -1,53 +1,106 @@
-from typing import Dict, Optional
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.urls import reverse
+from django.conf import settings
 
 from ...core.database import DatabaseManager
-from ...core.models import City
-from .base import AiGeoField
+from .widgets import BaseSelectWidget
 
 
-class CityField(AiGeoField):
-    """Field for storing city ID with autocomplete support"""
+class CitySelectWidget(BaseSelectWidget):
+    """Widget for city selection with Select2 integration.
+
+    This widget provides:
+    - Asynchronous city search
+    - City display with country name
+    - Automatic value handling
+    """
+
+    def __init__(self, attrs=None):
+        attrs = attrs or {}
+        attrs["class"] = "city-select"
+        attrs["data-placeholder"] = "Search for a city..."
+        super().__init__(attrs=attrs)
+        self._db = DatabaseManager()
+
+    def get_url(self):
+        """Get URL for city search endpoint."""
+        return reverse("aigeodb:search-cities")
+
+    def get_object_by_id(self, value):
+        """Get city object by ID.
+
+        Args:
+            value: City ID (int or str)
+
+        Returns:
+            City object or None if not found
+        """
+        try:
+            return self._db.get_city_by_id(int(value))
+        except (ValueError, TypeError) as e:
+            if settings.DEBUG:
+                print(f"Error converting city ID: {str(e)}")
+            return None
+
+    def format_choice(self, obj):
+        """Format city for display.
+
+        Args:
+            obj: City object
+
+        Returns:
+            Formatted string: "City Name, Country Name"
+        """
+        return f"{obj.name}, {obj.country.name}" if obj else ""
+
+
+class CityField(models.IntegerField):
+    """Field for storing city IDs with autocomplete widget."""
     
     def __init__(self, *args, **kwargs):
-        kwargs['autocomplete_url'] = '/api/aigeodb/cities/autocomplete/'
+        self._db = DatabaseManager()
+        kwargs['null'] = kwargs.get('null', True)
+        kwargs['blank'] = kwargs.get('blank', True)
         super().__init__(*args, **kwargs)
-        self.db = DatabaseManager()
-    
-    def get_data(self, city_id: int) -> Optional[Dict]:
-        """Get city data by ID"""
-        city: City = self.db.get_by_id(City, city_id)
-        if city:
-            return {
-                'id': city.id,
-                'name': city.name,
-                'country_code': city.country_code,
-                'state_code': city.state_code,
-                'latitude': city.latitude,
-                'longitude': city.longitude
-            }
-        return None
-    
-    @classmethod
-    def search(cls, term: str, country_code: str = None, limit: int = 20) -> list:
-        """Search cities for autocomplete"""
-        db = DatabaseManager()
-        
-        # Apply country filter if provided
-        filters = {'country_code': country_code} if country_code else None
-        
-        # Search using DatabaseManager
-        cities = db.search(
-            model=City,
-            term=term,
-            fields=['name', 'state_code'],
-            limit=limit
-        )
-        
-        # Apply country filter to results if needed
-        if filters:
-            cities = [c for c in cities if c.country_code == country_code]
-            
-        return [{
-            'id': city.id,
-            'text': f'{city.name}, {city.country_code}'
-        } for city in cities] 
+
+    def formfield(self, **kwargs):
+        defaults = {
+            'widget': CitySelectWidget,
+        }
+        defaults.update(kwargs)
+        return super().formfield(**defaults)
+
+    def validate(self, value, model_instance):
+        super().validate(value, model_instance)
+        if value is not None:
+            city = self._db.get_city_by_id(value)
+            if not city:
+                raise ValidationError('Invalid city ID')
+
+    def get_prep_value(self, value):
+        """Convert value before saving to database."""
+        if value is None:
+            return None
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return None
+
+    def from_db_value(self, value, expression, connection):
+        """Convert value when reading from database."""
+        if value is None:
+            return None
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return None
+
+    def to_python(self, value):
+        """Convert value to Python object."""
+        if value is None:
+            return None
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return None

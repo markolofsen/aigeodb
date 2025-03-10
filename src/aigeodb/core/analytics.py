@@ -1,5 +1,5 @@
-import sqlite3
 import json
+import sqlite3
 from pathlib import Path
 
 
@@ -26,7 +26,7 @@ def get_db_structure(db_path):
                 "type": col[2],
                 "notnull": bool(col[3]),
                 "default": col[4],
-                "pk": bool(col[5])
+                "pk": bool(col[5]),
             }
             for col in columns
         ]
@@ -37,17 +37,19 @@ def get_db_structure(db_path):
 
 def count_records():
     """Count records in each table of all databases."""
-    base_dir = Path(__file__).parent / 'sqlite'
+    base_dir = Path(__file__).parent / "sqlite"
     counts = {}
 
     # Process each .sqlite3 file
-    for db_file in base_dir.glob('*.sqlite3'):
+    for db_file in base_dir.glob("*.sqlite3"):
         db_name = db_file.stem
         conn = sqlite3.connect(str(db_file))
         cursor = conn.cursor()
 
         # Get all tables
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name != 'sqlite_sequence';")
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name != 'sqlite_sequence';"
+        )
         tables = cursor.fetchall()
 
         db_counts = {}
@@ -74,17 +76,17 @@ def count_records():
 
 def save_db_structures():
     """Save the structure of all SQLite databases to JSON."""
-    base_dir = Path(__file__).parent / 'sqlite'
+    base_dir = Path(__file__).parent / "sqlite"
     output = {}
 
     # Process each .sqlite3 file
-    for db_file in base_dir.glob('*.sqlite3'):
+    for db_file in base_dir.glob("*.sqlite3"):
         db_name = db_file.stem
         output[db_name] = get_db_structure(str(db_file))
 
     # Save to JSON file
-    output_path = base_dir / 'db_structure.json'
-    with open(output_path, 'w', encoding='utf-8') as f:
+    output_path = base_dir / "db_structure.json"
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
 
     print(f"Database structures have been saved to {output_path}")
