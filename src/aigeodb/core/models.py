@@ -116,3 +116,4 @@ class City(Base):
     # Relationships
     country = relationship("Country", back_populates="cities")
     state = relationship("State", back_populates="cities")
+

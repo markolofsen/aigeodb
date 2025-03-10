@@ -1,9 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from pathlib import Path
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple, Union
 from .models import Base, Country, Region, Subregion, State, City
 import logging
+from geopy.distance import geodesic
+from geopy.point import Point
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -145,27 +147,69 @@ class DatabaseManager:
         except Exception as e:
             session.rollback()
             raise e
-
-    def get_nearby_cities(self, latitude: float, longitude: float,
-                          radius_km: float = 100, limit: int = 10) -> List[City]:
+    
+    def get_nearby_cities(
+        self,
+        latitude: float,
+        longitude: float,
+        radius_km: float = 100,
+        limit: int = 10,
+        with_distance: bool = False
+    ) -> Union[List[City], List[Tuple[City, float]]]:
         """
-        Get cities within a radius of a point
-        Using simplified distance calculation
+        Get cities within a radius of a point with optional distance calculation.
+        
+        Args:
+            latitude: Center latitude
+            longitude: Center longitude
+            radius_km: Search radius in kilometers
+            limit: Maximum number of results
+            with_distance: If True, returns tuples (city, distance_km)
+            
+        Returns:
+            If with_distance=False: List[City] sorted by distance
+            If with_distance=True: List[Tuple[City, float]] sorted by distance
         """
         session = self.Session()
         try:
-            # Approximate degrees for the given radius (1 degree ≈ 111km)
+            # First get approximate results using bounding box
             degree_radius = radius_km / 111.0
-
-            results = session.query(City).filter(
-                City.latitude.between(latitude - degree_radius, latitude + degree_radius),
-                City.longitude.between(longitude - degree_radius, longitude + degree_radius),
+            
+            candidates = session.query(City).filter(
+                City.latitude.between(
+                    latitude - degree_radius, 
+                    latitude + degree_radius
+                ),
+                City.longitude.between(
+                    longitude - degree_radius, 
+                    longitude + degree_radius
+                ),
                 City.flag.is_(True)
-            ).limit(limit).all()
-
-            for result in results:
-                session.merge(result)
-            return results
+            ).all()
+            
+            # Calculate exact distances
+            cities_with_distances = []
+            for city in candidates:
+                distance = self.calculate_distance(
+                    latitude, longitude,
+                    city.latitude, city.longitude
+                )
+                if distance <= radius_km:
+                    cities_with_distances.append((city, distance))
+            
+            # Sort by distance and limit results
+            cities_with_distances.sort(key=lambda x: x[1])
+            results = cities_with_distances[:limit]
+            
+            # Merge cities to session
+            for city, _ in results:
+                session.merge(city)
+            
+            # Return results in requested format
+            if with_distance:
+                return results
+            return [city for city, _ in results]
+            
         except Exception as e:
             session.rollback()
             raise e
@@ -184,3 +228,26 @@ class DatabaseManager:
         except Exception as e:
             session.rollback()
             raise e
+
+    def calculate_distance(
+        self,
+        lat1: float,
+        lon1: float,
+        lat2: float,
+        lon2: float
+    ) -> float:
+        """
+        Calculate distance between two points in kilometers.
+        
+        Args:
+            lat1: Latitude of first point
+            lon1: Longitude of first point
+            lat2: Latitude of second point
+            lon2: Longitude of second point
+            
+        Returns:
+            Distance in kilometers
+        """
+        point1 = Point(lat1, lon1)
+        point2 = Point(lat2, lon2)
+        return geodesic(point1, point2).kilometers
