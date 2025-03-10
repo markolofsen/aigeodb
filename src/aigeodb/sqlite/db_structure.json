@@ -1,0 +1,1096 @@
+{
+  "subregions": {
+    "subregions": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default": null,
+        "pk": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(100)",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "translations",
+        "type": "TEXT",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "region_id",
+        "type": "MEDIUMINT",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": true,
+        "default": "'CURRENT_TIMESTAMP'",
+        "pk": false
+      },
+      {
+        "name": "flag",
+        "type": "TINYINT",
+        "notnull": true,
+        "default": "'1'",
+        "pk": false
+      },
+      {
+        "name": "wikiDataId",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      }
+    ],
+    "sqlite_sequence": [
+      {
+        "name": "name",
+        "type": "",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "seq",
+        "type": "",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      }
+    ]
+  },
+  "regions": {
+    "regions": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default": null,
+        "pk": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(100)",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "translations",
+        "type": "TEXT",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": true,
+        "default": "'CURRENT_TIMESTAMP'",
+        "pk": false
+      },
+      {
+        "name": "flag",
+        "type": "TINYINT",
+        "notnull": true,
+        "default": "'1'",
+        "pk": false
+      },
+      {
+        "name": "wikiDataId",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      }
+    ],
+    "sqlite_sequence": [
+      {
+        "name": "name",
+        "type": "",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "seq",
+        "type": "",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      }
+    ]
+  },
+  "world": {
+    "cities": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default": null,
+        "pk": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(255)",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "state_id",
+        "type": "MEDIUMINT",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "state_code",
+        "type": "VARCHAR(255)",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "country_id",
+        "type": "MEDIUMINT",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "country_code",
+        "type": "CHARACTER(2)",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "latitude",
+        "type": "DECIMAL",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "longitude",
+        "type": "DECIMAL",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": true,
+        "default": "'2014-01-01 12:01:01'",
+        "pk": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": true,
+        "default": "'CURRENT_TIMESTAMP'",
+        "pk": false
+      },
+      {
+        "name": "flag",
+        "type": "TINYINT",
+        "notnull": true,
+        "default": "'1'",
+        "pk": false
+      },
+      {
+        "name": "wikiDataId",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      }
+    ],
+    "sqlite_sequence": [
+      {
+        "name": "name",
+        "type": "",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "seq",
+        "type": "",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      }
+    ],
+    "countries": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default": null,
+        "pk": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(100)",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "iso3",
+        "type": "CHARACTER(3)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "numeric_code",
+        "type": "CHARACTER(3)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "iso2",
+        "type": "CHARACTER(2)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "phonecode",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "capital",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "currency",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "currency_name",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "currency_symbol",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "tld",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "native",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "region",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "region_id",
+        "type": "MEDIUMINT",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "subregion",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "subregion_id",
+        "type": "MEDIUMINT",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "nationality",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "timezones",
+        "type": "TEXT",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "translations",
+        "type": "TEXT",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "latitude",
+        "type": "DECIMAL",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "longitude",
+        "type": "DECIMAL",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "emoji",
+        "type": "VARCHAR(191)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "emojiU",
+        "type": "VARCHAR(191)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": true,
+        "default": "'CURRENT_TIMESTAMP'",
+        "pk": false
+      },
+      {
+        "name": "flag",
+        "type": "TINYINT",
+        "notnull": true,
+        "default": "'1'",
+        "pk": false
+      },
+      {
+        "name": "wikiDataId",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      }
+    ],
+    "regions": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default": null,
+        "pk": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(100)",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "translations",
+        "type": "TEXT",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": true,
+        "default": "'CURRENT_TIMESTAMP'",
+        "pk": false
+      },
+      {
+        "name": "flag",
+        "type": "TINYINT",
+        "notnull": true,
+        "default": "'1'",
+        "pk": false
+      },
+      {
+        "name": "wikiDataId",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      }
+    ],
+    "states": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default": null,
+        "pk": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(255)",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "country_id",
+        "type": "MEDIUMINT",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "country_code",
+        "type": "CHARACTER(2)",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "fips_code",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "iso2",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "type",
+        "type": "VARCHAR(191)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "level",
+        "type": "INTEGER",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "parent_id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "latitude",
+        "type": "DECIMAL",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "longitude",
+        "type": "DECIMAL",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": true,
+        "default": "'CURRENT_TIMESTAMP'",
+        "pk": false
+      },
+      {
+        "name": "flag",
+        "type": "TINYINT",
+        "notnull": true,
+        "default": "'1'",
+        "pk": false
+      },
+      {
+        "name": "wikiDataId",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      }
+    ],
+    "subregions": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default": null,
+        "pk": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(100)",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "translations",
+        "type": "TEXT",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "region_id",
+        "type": "MEDIUMINT",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": true,
+        "default": "'CURRENT_TIMESTAMP'",
+        "pk": false
+      },
+      {
+        "name": "flag",
+        "type": "TINYINT",
+        "notnull": true,
+        "default": "'1'",
+        "pk": false
+      },
+      {
+        "name": "wikiDataId",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      }
+    ]
+  },
+  "states": {
+    "states": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default": null,
+        "pk": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(255)",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "country_id",
+        "type": "MEDIUMINT",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "country_code",
+        "type": "CHARACTER(2)",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "fips_code",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "iso2",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "type",
+        "type": "VARCHAR(191)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "level",
+        "type": "INTEGER",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "parent_id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "latitude",
+        "type": "DECIMAL",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "longitude",
+        "type": "DECIMAL",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": true,
+        "default": "'CURRENT_TIMESTAMP'",
+        "pk": false
+      },
+      {
+        "name": "flag",
+        "type": "TINYINT",
+        "notnull": true,
+        "default": "'1'",
+        "pk": false
+      },
+      {
+        "name": "wikiDataId",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      }
+    ],
+    "sqlite_sequence": [
+      {
+        "name": "name",
+        "type": "",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "seq",
+        "type": "",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      }
+    ]
+  },
+  "countries": {
+    "countries": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default": null,
+        "pk": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(100)",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "iso3",
+        "type": "CHARACTER(3)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "numeric_code",
+        "type": "CHARACTER(3)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "iso2",
+        "type": "CHARACTER(2)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "phonecode",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "capital",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "currency",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "currency_name",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "currency_symbol",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "tld",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "native",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "region",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "region_id",
+        "type": "MEDIUMINT",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "subregion",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "subregion_id",
+        "type": "MEDIUMINT",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "nationality",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "timezones",
+        "type": "TEXT",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "translations",
+        "type": "TEXT",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "latitude",
+        "type": "DECIMAL",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "longitude",
+        "type": "DECIMAL",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "emoji",
+        "type": "VARCHAR(191)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "emojiU",
+        "type": "VARCHAR(191)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": true,
+        "default": "'CURRENT_TIMESTAMP'",
+        "pk": false
+      },
+      {
+        "name": "flag",
+        "type": "TINYINT",
+        "notnull": true,
+        "default": "'1'",
+        "pk": false
+      },
+      {
+        "name": "wikiDataId",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      }
+    ],
+    "sqlite_sequence": [
+      {
+        "name": "name",
+        "type": "",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "seq",
+        "type": "",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      }
+    ]
+  },
+  "cities": {
+    "cities": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default": null,
+        "pk": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(255)",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "state_id",
+        "type": "MEDIUMINT",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "state_code",
+        "type": "VARCHAR(255)",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "country_id",
+        "type": "MEDIUMINT",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "country_code",
+        "type": "CHARACTER(2)",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "latitude",
+        "type": "DECIMAL",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "longitude",
+        "type": "DECIMAL",
+        "notnull": true,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": true,
+        "default": "'2014-01-01 12:01:01'",
+        "pk": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": true,
+        "default": "'CURRENT_TIMESTAMP'",
+        "pk": false
+      },
+      {
+        "name": "flag",
+        "type": "TINYINT",
+        "notnull": true,
+        "default": "'1'",
+        "pk": false
+      },
+      {
+        "name": "wikiDataId",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      }
+    ],
+    "sqlite_sequence": [
+      {
+        "name": "name",
+        "type": "",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      },
+      {
+        "name": "seq",
+        "type": "",
+        "notnull": false,
+        "default": null,
+        "pk": false
+      }
+    ]
+  }
+}
