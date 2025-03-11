@@ -3,12 +3,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from geopy.distance import geodesic
-from sqlalchemy import create_engine, or_
-from sqlalchemy.orm import scoped_session, sessionmaker
+# Peewee modules
+import peewee as pw
 
-from .models import Base, City, Country, Region, State, Subregion
-
-# from geopy.point import Point
+# Import models
+from .models import BaseModel, City, Country, Region, State, Subregion, database
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -25,65 +24,70 @@ class DatabaseManager:
 
         logger.debug(f"Database path: {self.db_path}")
         logger.debug(f"Database exists: {self.db_path.exists()}")
-        logger.debug(
-            f"Database is file: {self.db_path.is_file() if self.db_path.exists() else False}"
-        )
+        is_file = self.db_path.is_file() if self.db_path.exists() else False
+        logger.debug(f"Database is file: {is_file}")
         logger.debug(f"Current working directory: {Path.cwd()}")
 
         if not self.db_path.exists():
             raise FileNotFoundError(f"Database file not found: {self.db_path}")
 
-        self.engine = create_engine(f"sqlite:///{self.db_path}")
-        self.session_factory = sessionmaker(bind=self.engine)
-        self.Session = scoped_session(self.session_factory)
+        # Initialize the database
+        database.init(str(self.db_path))
+        
+        # Check connection
+        if not database.is_closed():
+            database.close()
+        database.connect()
 
     def query(
         self,
-        model: Base,
+        model: BaseModel,
         filters: Optional[Dict[str, Any]] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
-    ) -> List[Base]:
+    ) -> List[BaseModel]:
         """
         Generic query method
-        :param model: SQLAlchemy model class
+        :param model: Peewee model class
         :param filters: Dictionary of filters {column_name: value}
         :param limit: Maximum number of records to return
         :param offset: Number of records to skip
         :return: List of model instances
         """
-        session = self.Session()
         try:
-            query = session.query(model)
+            query = model.select()
 
             if filters:
+                conditions = []
                 for key, value in filters.items():
+                    field = getattr(model, key)
                     if isinstance(value, (list, tuple)):
-                        query = query.filter(getattr(model, key).in_(value))
+                        conditions.append(field.in_(value))
                     else:
-                        query = query.filter(getattr(model, key) == value)
+                        conditions.append(field == value)
+                
+                if conditions:
+                    query = query.where(*conditions)
 
             if offset:
                 query = query.offset(offset)
             if limit:
                 query = query.limit(limit)
 
-            results = query.all()
-            for result in results:
-                session.merge(result)
-            return results
+            return list(query)
         except Exception as e:
-            session.rollback()
+            logger.error(f"Query error: {e}")
             raise e
 
     def search(
-        self, model: Base, term: str, fields: List[str], limit: Optional[int] = None
-    ) -> List[Base]:
+        self, model: BaseModel, term: str, fields: List[str], 
+        limit: Optional[int] = None
+    ) -> List[BaseModel]:
         """
         Search records by term in specified fields using OR condition
 
         Args:
-            model: SQLAlchemy model class
+            model: Peewee model class
             term: Search term
             fields: List of field names to search in
             limit: Maximum number of records to return
@@ -91,37 +95,31 @@ class DatabaseManager:
         Returns:
             List of matching records where ANY of the fields match the term
         """
-        session = self.Session()
         try:
-            query = session.query(model)
-
             # Clean and validate search term
             if not term or not term.strip():
                 return []
             term = term.strip()
 
             # Build OR conditions for each field
-            search_conditions = [
-                getattr(model, field).ilike(f"%{term}%")
-                for field in fields
-                if hasattr(model, field)  # Check field exists
-            ]
+            search_conditions = []
+            for field in fields:
+                if hasattr(model, field):
+                    field_obj = getattr(model, field)
+                    search_conditions.append(field_obj.contains(term))
 
             if not search_conditions:
                 return []
 
             # Apply OR conditions and limit
-            query = query.filter(or_(*search_conditions))
+            query = model.select().where(pw.OR(*search_conditions))
             if limit:
                 query = query.limit(limit)
 
-            results = query.all()
-            for result in results:
-                session.merge(result)
-            return results
+            return list(query)
 
         except Exception as e:
-            session.rollback()
+            logger.error(f"Search error: {e}")
             raise e
 
     def get_cities_by_country(self, country_code: str) -> List[City]:
@@ -135,18 +133,18 @@ class DatabaseManager:
     def search_cities(self, term: str, limit: int = 10) -> List[City]:
         """Search cities by name"""
         return self.search(City, term, ["name"], limit)
+        
+    def search_countries(self, term: str, limit: int = 10) -> List[Country]:
+        """Search countries by name"""
+        return self.search(Country, term, ["name", "iso2", "iso3"], limit)
 
     def get_country_info(self, country_code: str) -> Optional[Dict[str, Any]]:
         """Get detailed information about a country"""
-        session = self.Session()
         try:
-            country = (
-                session.query(Country).filter(Country.iso2 == country_code).first()
-            )
+            country = Country.select().where(Country.iso2 == country_code).first()
             if not country:
                 return None
 
-            session.merge(country)
             return {
                 "id": country.id,
                 "name": country.name,
@@ -163,7 +161,7 @@ class DatabaseManager:
                 "emoji": country.emoji,
             }
         except Exception as e:
-            session.rollback()
+            logger.error(f"Error getting country info: {e}")
             raise e
 
     def get_nearby_cities(
@@ -188,23 +186,22 @@ class DatabaseManager:
             If with_distance=False: List[City] sorted by distance
             If with_distance=True: List[Tuple[City, float]] sorted by distance
         """
-        session = self.Session()
         try:
             # First get approximate results using bounding box
             degree_radius = radius_km / 111.0
 
             candidates = (
-                session.query(City)
-                .filter(
+                City.select()
+                .where(
                     City.latitude.between(
                         latitude - degree_radius, latitude + degree_radius
                     ),
                     City.longitude.between(
                         longitude - degree_radius, longitude + degree_radius
                     ),
-                    City.flag.is_(True),
+                    City.flag,
                 )
-                .all()
+                .execute()
             )
 
             # Calculate exact distances
@@ -220,101 +217,105 @@ class DatabaseManager:
             cities_with_distances.sort(key=lambda x: x[1])
             results = cities_with_distances[:limit]
 
-            # Merge cities to session
-            for city, _ in results:
-                session.merge(city)
-
             # Return results in requested format
             if with_distance:
                 return results
             return [city for city, _ in results]
 
         except Exception as e:
-            session.rollback()
+            logger.error(f"Error getting nearby cities: {e}")
             raise e
 
     def get_statistics(self) -> Dict[str, int]:
         """Get count of records in each table"""
-        session = self.Session()
         try:
             return {
-                "countries": session.query(Country).count(),
-                "regions": session.query(Region).count(),
-                "subregions": session.query(Subregion).count(),
-                "states": session.query(State).count(),
-                "cities": session.query(City).count(),
+                "countries": Country.select().count(),
+                "regions": Region.select().count(),
+                "subregions": Subregion.select().count(),
+                "states": State.select().count(),
+                "cities": City.select().count(),
             }
         except Exception as e:
-            session.rollback()
+            logger.error(f"Error getting statistics: {e}")
             raise e
 
     def calculate_distance(
         self, point1: Tuple[float, float], point2: Tuple[float, float]
     ) -> float:
         """
-        Calculate distance between two points in kilometers.
-
-        Args:
-            point1: First point as (latitude, longitude)
-            point2: Second point as (latitude, longitude)
-
-        Returns:
-            Distance in kilometers
-
-        Example:
-            >>> new_york = (40.7128, -74.0060)
-            >>> london = (51.5074, -0.1278)
-            >>> distance = db.calculate_distance(new_york, london)
+        Calculate distance between two points in kilometers
+        :param point1: (latitude, longitude)
+        :param point2: (latitude, longitude)
+        :return: Distance in kilometers
         """
-        return geodesic(point1, point2).kilometers
-
-    def get_by_id(self, model: Base, id: int) -> Optional[Base]:
-        """
-        Get record by ID
-        :param model: SQLAlchemy model class
-        :param id: Record ID
-        :return: Model instance or None if not found
-        """
-        session = self.Session()
         try:
-            result = session.query(model).get(id)
-            if result:
-                session.merge(result)
-            return result
+            return geodesic(point1, point2).kilometers
         except Exception as e:
-            session.rollback()
-            raise e
+            logger.error(f"Error calculating distance: {e}")
+            return float("inf")  # Return infinity on error
 
-    def get_city_by_id(self, city_id: int) -> Optional[City]:
-        """Get city by ID"""
-        if not city_id:
+    def get_by_id(self, model: BaseModel, id: int) -> Optional[BaseModel]:
+        """
+        Get model instance by ID
+        :param model: Peewee model class
+        :param id: ID of the record
+        :return: Model instance or None
+        """
+        try:
+            return model.get_or_none(model.id == id)
+        except Exception as e:
+            logger.error(f"Error getting record by ID: {e}")
             return None
 
-        session = self.Session()
-        try:
-            return session.query(City).filter(City.id == city_id).first()
-        except Exception as e:
-            session.rollback()
-            raise e
-
-    def get_all_cities(self) -> List[City]:
-        """Get all cities"""
-        session = self.Session()
-        try:
-            return session.query(City).order_by(City.name).all()
-        except Exception as e:
-            session.rollback()
-            raise e
-
-    def get_all_countries(self) -> List[Country]:
-        """Get all countries"""
-        session = self.Session()
-        try:
-            return session.query(Country).order_by(Country.name).all()
-        except Exception as e:
-            session.rollback()
-            raise e
+    def get_city_by_id(self, city_id: int) -> Optional[City]:
+        """
+        Get city by ID
+        :param city_id: City ID
+        :return: City instance or None
+        """
+        return self.get_by_id(City, city_id)
 
     def get_country_by_id(self, country_id: int) -> Optional[Country]:
-        """Get country by ID"""
-        return self.get_by_id(Country, country_id)
+        """
+        Get country by ID
+        :param country_id: Country ID
+        :return: Country instance or None
+        """
+        try:
+            if isinstance(country_id, str):
+                # If string provided, treat it as ISO2 code and use get_country_by_code
+                return self.get_country_by_code(country_id)
+            else:
+                # Otherwise, use the numeric ID
+                return Country.get_or_none(Country.id == country_id)
+        except Exception as e:
+            logger.error(f"Error getting country by ID: {e}")
+            return None
+            
+    def get_country_by_code(self, country_code: str) -> Optional[Country]:
+        """
+        Get country by ISO2 code
+        :param country_code: ISO2 country code (2 letters)
+        :return: Country instance or None
+        """
+        try:
+            code = str(country_code).upper()
+            return Country.get_or_none(Country.iso2 == code)
+        except Exception as e:
+            logger.error(f"Error getting country by code: {e}")
+            return None
+
+    def get_all_cities(self) -> List[City]:
+        """
+        Get all cities
+        :return: List of all cities
+        """
+        return list(City.select().where(City.flag))
+
+    def get_all_countries(self) -> List[Country]:
+        """
+        Get all countries
+        :return: List of all countries
+        """
+        return list(Country.select().where(Country.flag))

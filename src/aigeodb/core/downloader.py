@@ -1,7 +1,13 @@
 import logging
 from pathlib import Path
 
-import requests
+try:
+    import requests
+except ImportError:
+    raise ImportError(
+        "The 'requests' package is required for database downloads.\n"
+        "Please install it with: pip install 'aigeodb[download]'"
+    )
 
 
 class DatabaseDownloader:

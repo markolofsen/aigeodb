@@ -35,7 +35,6 @@ class DeployManager:
             },
             "Version Control": {
                 "Update Version": self.update_version,
-                "Deploy to GitHub": self.deploy_to_github,
                 "Show Changes": self.show_changes,
             },
             "Package Management": {
@@ -184,16 +183,6 @@ class DeployManager:
 
         return self.run_command("twine upload dist/*", "Uploading to PyPI")
 
-    def deploy_to_github(self) -> bool:
-        """Deploy changes to GitHub."""
-        message = questionary.text(
-            "Enter commit message:", default="Update package"
-        ).ask()
-        if not message:
-            return False
-        return self.run_command(
-            f'git add . && git commit -m "{message}" && git push', "Deploying to GitHub"
-        )
 
     def update_version(self) -> bool:
         """Update package version."""

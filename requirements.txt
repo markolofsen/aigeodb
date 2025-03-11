@@ -6,6 +6,6 @@ pytest-cov
 flake8
 
 geopy
-SQLAlchemy
+peewee
 questionary
 requests

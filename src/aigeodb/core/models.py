@@ -1,128 +1,122 @@
 from datetime import datetime
 
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    Float,
-    ForeignKey,
-    Integer,
-    String,
-    Text,
-)
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-
-Base = declarative_base()
+# Peewee imports
+import peewee as pw
 
 
-class Country(Base):
-    __tablename__ = "countries"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(100), nullable=False)
-    iso3 = Column(String(3))
-    numeric_code = Column(String(3))
-    iso2 = Column(String(2))
-    phonecode = Column(String(255))
-    capital = Column(String(255))
-    currency = Column(String(255))
-    currency_name = Column(String(255))
-    currency_symbol = Column(String(255))
-    tld = Column(String(255))
-    native = Column(String(255))
-    region = Column(String(255))
-    region_id = Column(Integer)
-    subregion = Column(String(255))
-    subregion_id = Column(Integer)
-    nationality = Column(String(255))
-    timezones = Column(Text)
-    translations = Column(Text)
-    latitude = Column(Float)
-    longitude = Column(Float)
-    emoji = Column(String(191))
-    emojiU = Column(String(191))
-    created_at = Column(DateTime)
-    updated_at = Column(DateTime, default=datetime.utcnow)
-    flag = Column(Boolean, default=True)
-    wikiDataId = Column(String(255))
-
-    # Relationships
-    states = relationship("State", back_populates="country")
-    cities = relationship("City", back_populates="country")
+# Database will be initialized in DatabaseManager
+database = pw.SqliteDatabase(None)
 
 
-class Region(Base):
-    __tablename__ = "regions"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(100), nullable=False)
-    translations = Column(Text)
-    created_at = Column(DateTime)
-    updated_at = Column(DateTime, default=datetime.utcnow)
-    flag = Column(Boolean, default=True)
-    wikiDataId = Column(String(255))
-
-    # Relationships
-    subregions = relationship("Subregion", back_populates="region")
+# Base model for all models
+class BaseModel(pw.Model):
+    class Meta:
+        database = database
 
 
-class Subregion(Base):
-    __tablename__ = "subregions"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(100), nullable=False)
-    translations = Column(Text)
-    region_id = Column(Integer, ForeignKey("regions.id"), nullable=False)
-    created_at = Column(DateTime)
-    updated_at = Column(DateTime, default=datetime.utcnow)
-    flag = Column(Boolean, default=True)
-    wikiDataId = Column(String(255))
-
-    # Relationships
-    region = relationship("Region", back_populates="subregions")
+# ORM Models
 
 
-class State(Base):
-    __tablename__ = "states"
+class Country(BaseModel):
+    id = pw.AutoField(primary_key=True)
+    name = pw.CharField(max_length=100, null=False)
+    iso3 = pw.CharField(max_length=3, null=True)
+    numeric_code = pw.CharField(max_length=3, null=True)
+    iso2 = pw.CharField(max_length=2, null=True)
+    phonecode = pw.CharField(max_length=255, null=True)
+    capital = pw.CharField(max_length=255, null=True)
+    currency = pw.CharField(max_length=255, null=True)
+    currency_name = pw.CharField(max_length=255, null=True)
+    currency_symbol = pw.CharField(max_length=255, null=True)
+    tld = pw.CharField(max_length=255, null=True)
+    native = pw.CharField(max_length=255, null=True)
+    region = pw.CharField(max_length=255, null=True)
+    region_id = pw.IntegerField(null=True)
+    subregion = pw.CharField(max_length=255, null=True)
+    subregion_id = pw.IntegerField(null=True)
+    nationality = pw.CharField(max_length=255, null=True)
+    timezones = pw.TextField(null=True)
+    translations = pw.TextField(null=True)
+    latitude = pw.FloatField(null=True)
+    longitude = pw.FloatField(null=True)
+    emoji = pw.CharField(max_length=191, null=True)
+    emojiU = pw.CharField(max_length=191, null=True)
+    created_at = pw.DateTimeField(null=True)
+    updated_at = pw.DateTimeField(default=datetime.utcnow)
+    flag = pw.BooleanField(default=True)
+    wikiDataId = pw.CharField(max_length=255, null=True)
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(255), nullable=False)
-    country_id = Column(Integer, ForeignKey("countries.id"), nullable=False)
-    country_code = Column(String(2), nullable=False)
-    fips_code = Column(String(255))
-    iso2 = Column(String(255))
-    type = Column(String(191))
-    level = Column(Integer)
-    parent_id = Column(Integer)
-    latitude = Column(Float)
-    longitude = Column(Float)
-    created_at = Column(DateTime)
-    updated_at = Column(DateTime, default=datetime.utcnow)
-    flag = Column(Boolean, default=True)
-    wikiDataId = Column(String(255))
-
-    # Relationships
-    country = relationship("Country", back_populates="states")
-    cities = relationship("City", back_populates="state")
+    class Meta:
+        table_name = 'countries'
 
 
-class City(Base):
-    __tablename__ = "cities"
+class Region(BaseModel):
+    id = pw.AutoField(primary_key=True)
+    name = pw.CharField(max_length=100, null=False)
+    translations = pw.TextField(null=True)
+    created_at = pw.DateTimeField(null=True)
+    updated_at = pw.DateTimeField(default=datetime.utcnow)
+    flag = pw.BooleanField(default=True)
+    wikiDataId = pw.CharField(max_length=255, null=True)
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(255), nullable=False)
-    state_id = Column(Integer, ForeignKey("states.id"), nullable=False)
-    state_code = Column(String(255), nullable=False)
-    country_id = Column(Integer, ForeignKey("countries.id"), nullable=False)
-    country_code = Column(String(2), nullable=False)
-    latitude = Column(Float, nullable=False)
-    longitude = Column(Float, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow)
-    flag = Column(Boolean, default=True)
-    wikiDataId = Column(String(255))
+    class Meta:
+        table_name = 'regions'
 
-    # Relationships
-    country = relationship("Country", back_populates="cities")
-    state = relationship("State", back_populates="cities")
+
+class Subregion(BaseModel):
+    id = pw.AutoField(primary_key=True)
+    name = pw.CharField(max_length=100, null=False)
+    translations = pw.TextField(null=True)
+    region_id = pw.ForeignKeyField(Region, column_name='region_id', null=False)
+    created_at = pw.DateTimeField(null=True)
+    updated_at = pw.DateTimeField(default=datetime.utcnow)
+    flag = pw.BooleanField(default=True)
+    wikiDataId = pw.CharField(max_length=255, null=True)
+
+    class Meta:
+        table_name = 'subregions'
+
+
+class State(BaseModel):
+    id = pw.AutoField(primary_key=True)
+    name = pw.CharField(max_length=255, null=False)
+    country = pw.ForeignKeyField(
+        Country, column_name='country_id', backref='states', null=False
+    )
+    country_code = pw.CharField(max_length=2, null=False)
+    fips_code = pw.CharField(max_length=255, null=True)
+    iso2 = pw.CharField(max_length=255, null=True)
+    type = pw.CharField(max_length=191, null=True)
+    level = pw.IntegerField(null=True)
+    parent_id = pw.IntegerField(null=True)
+    latitude = pw.FloatField(null=True)
+    longitude = pw.FloatField(null=True)
+    created_at = pw.DateTimeField(null=True)
+    updated_at = pw.DateTimeField(default=datetime.utcnow)
+    flag = pw.BooleanField(default=True)
+    wikiDataId = pw.CharField(max_length=255, null=True)
+
+    class Meta:
+        table_name = 'states'
+
+
+class City(BaseModel):
+    id = pw.AutoField(primary_key=True)
+    name = pw.CharField(max_length=255, null=False)
+    state = pw.ForeignKeyField(
+        State, column_name='state_id', backref='cities', null=False
+    )
+    state_code = pw.CharField(max_length=255, null=False)
+    country = pw.ForeignKeyField(
+        Country, column_name='country_id', backref='cities', null=False
+    )
+    country_code = pw.CharField(max_length=2, null=False)
+    latitude = pw.FloatField(null=False)
+    longitude = pw.FloatField(null=False)
+    created_at = pw.DateTimeField(default=datetime.utcnow)
+    updated_at = pw.DateTimeField(default=datetime.utcnow)
+    flag = pw.BooleanField(default=True)
+    wikiDataId = pw.CharField(max_length=255, null=True)
+
+    class Meta:
+        table_name = 'cities'
