@@ -1,13 +1,8 @@
 import logging
 from pathlib import Path
-
-try:
-    import requests
-except ImportError:
-    raise ImportError(
-        "The 'requests' package is required for database downloads.\n"
-        "Please install it with: pip install 'aigeodb[download]'"
-    )
+import requests
+import subprocess
+import sys
 
 
 class DatabaseDownloader:
@@ -78,3 +73,39 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+def force_install_critical_dependencies():
+    """Force uninstall and reinstall critical dependencies."""
+    log("=== FORCE REINSTALLING CRITICAL DEPENDENCIES ===", "warning")
+    
+    # Список пакетов для удаления
+    to_uninstall = ["urllib3", "requests", "chardet", "idna", "certifi"]
+    
+    # Удаляем все зависимости
+    for package in to_uninstall:
+        log(f"Uninstalling {package}...")
+        subprocess.run(
+            [sys.executable, "-m", "pip", "uninstall", "-y", package],
+            check=False
+        )
+    
+    # Очищаем кэш pip
+    log("Clearing pip cache...")
+    subprocess.run(
+        [sys.executable, "-m", "pip", "cache", "purge"],
+        check=False
+    )
+    
+    # Устанавливаем urllib3 сначала
+    log("Installing urllib3>=2.0.0...")
+    subprocess.run(
+        [sys.executable, "-m", "pip", "install", "--no-cache-dir", "--force-reinstall", "urllib3>=2.0.0"],
+        check=False
+    )
+    
+    # Затем requests
+    log("Installing requests>=2.31.0...")
+    subprocess.run(
+        [sys.executable, "-m", "pip", "install", "--no-cache-dir", "--force-reinstall", "requests>=2.31.0"],
+        check=False
+    )
