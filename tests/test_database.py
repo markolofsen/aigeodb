@@ -36,3 +36,8 @@ def test_nearby_cities(db):
     # New York coordinates
     cities = db.get_nearby_cities(40.7128, -74.0060, radius_km=100, limit=5)
     assert len(cities) > 0
+
+
+if __name__ == "__main__":
+    pytest.main()
+    

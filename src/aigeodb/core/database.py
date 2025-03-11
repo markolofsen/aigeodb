@@ -3,8 +3,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from geopy.distance import geodesic
-# Peewee modules
-import peewee as pw
 
 # Import models
 from .models import BaseModel, City, Country, Region, State, Subregion, database
@@ -112,7 +110,15 @@ class DatabaseManager:
                 return []
 
             # Apply OR conditions and limit
-            query = model.select().where(pw.OR(*search_conditions))
+            if len(search_conditions) == 1:
+                query = model.select().where(search_conditions[0])
+            else:
+                # Combine conditions with OR operator using Peewee's | operator
+                condition = search_conditions[0]
+                for additional_condition in search_conditions[1:]:
+                    condition = condition | additional_condition
+                query = model.select().where(condition)
+                
             if limit:
                 query = query.limit(limit)
 
