@@ -1,11 +1,14 @@
-
+# Development dependencies
 twine
 build
 pytest
 pytest-cov
 flake8
+black
+isort
 questionary
 
+# Runtime dependencies
 geopy
 peewee
 questionary
