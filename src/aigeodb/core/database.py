@@ -31,7 +31,7 @@ class DatabaseManager:
 
         # Initialize the database
         database.init(str(self.db_path))
-        
+
         # Check connection
         if not database.is_closed():
             database.close()
@@ -63,7 +63,7 @@ class DatabaseManager:
                         conditions.append(field.in_(value))
                     else:
                         conditions.append(field == value)
-                
+
                 if conditions:
                     query = query.where(*conditions)
 
@@ -78,7 +78,7 @@ class DatabaseManager:
             raise e
 
     def search(
-        self, model: BaseModel, term: str, fields: List[str], 
+        self, model: BaseModel, term: str, fields: List[str],
         limit: Optional[int] = None
     ) -> List[BaseModel]:
         """
@@ -118,7 +118,7 @@ class DatabaseManager:
                 for additional_condition in search_conditions[1:]:
                     condition = condition | additional_condition
                 query = model.select().where(condition)
-                
+
             if limit:
                 query = query.limit(limit)
 
@@ -139,7 +139,7 @@ class DatabaseManager:
     def search_cities(self, term: str, limit: int = 10) -> List[City]:
         """Search cities by name"""
         return self.search(City, term, ["name"], limit)
-        
+
     def search_countries(self, term: str, limit: int = 10) -> List[Country]:
         """Search countries by name"""
         return self.search(Country, term, ["name", "iso2", "iso3"], limit)
@@ -176,21 +176,18 @@ class DatabaseManager:
         longitude: float,
         radius_km: float = 100,
         limit: int = 10,
-        with_distance: bool = False,
-    ) -> Union[List[City], List[Tuple[City, float]]]:
+    ) -> List[City]:
         """
-        Get cities within a radius of a point with optional distance calculation.
+        Get cities within a radius of a point, sorted by distance.
 
         Args:
             latitude: Center latitude
             longitude: Center longitude
             radius_km: Search radius in kilometers
             limit: Maximum number of results
-            with_distance: If True, returns tuples (city, distance_km)
 
         Returns:
-            If with_distance=False: List[City] sorted by distance
-            If with_distance=True: List[Tuple[City, float]] sorted by distance
+            List[City]: List of cities sorted by distance from the given point
         """
         try:
             # First get approximate results using bounding box
@@ -210,7 +207,7 @@ class DatabaseManager:
                 .execute()
             )
 
-            # Calculate exact distances
+            # Calculate exact distances and filter
             cities_with_distances = []
             for city in candidates:
                 distance = self.calculate_distance(
@@ -223,9 +220,7 @@ class DatabaseManager:
             cities_with_distances.sort(key=lambda x: x[1])
             results = cities_with_distances[:limit]
 
-            # Return results in requested format
-            if with_distance:
-                return results
+            # Return only the cities, sorted by distance
             return [city for city, _ in results]
 
         except Exception as e:
@@ -298,7 +293,7 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error getting country by ID: {e}")
             return None
-            
+
     def get_country_by_code(self, country_code: str) -> Optional[Country]:
         """
         Get country by ISO2 code

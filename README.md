@@ -38,8 +38,13 @@ country = db.get_country_info("US")
 print(country.name, country.iso2)
 
 # Find nearby cities
-nearby = db.get_nearby_cities(40.7128, -74.0060, radius_km=100)
-for city in nearby:
+cities = db.get_nearby_cities(
+    latitude=40.7128,
+    longitude=-74.0060,
+    radius_km=100,
+    limit=10
+)
+for city in cities:
     print(f"{city.name}, {city.state_code}")
 ```
 
@@ -70,17 +75,6 @@ cities = db.get_nearby_cities(
 )
 for city in cities:
     print(f"{city.name}, {city.state_code}")
-
-# Find nearby cities with distances
-cities_with_distances = db.get_nearby_cities(
-    latitude=40.7128,
-    longitude=-74.0060,
-    radius_km=100,
-    limit=10,
-    with_distance=True
-)
-for city, distance in cities_with_distances:
-    print(f"{city.name}: {distance:.1f}km")
 
 # Get cities by country
 cities = db.get_cities_by_country("US")
