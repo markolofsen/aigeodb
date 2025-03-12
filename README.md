@@ -2,14 +2,6 @@
 
 A Python package for working with world cities, countries, regions database. This package provides easy access to a comprehensive database of world locations.
 
-## About
-
-Developed by [Unrealos Inc.](https://unrealos.com/) - We create innovative SaaS and PaaS solutions powered by AI for business. Our expertise includes:
-- AI-powered business solutions
-- SaaS platforms
-- PaaS infrastructure
-- Custom enterprise software
-
 ## Features
 
 - Easy-to-use interface for querying geographical data
@@ -71,7 +63,7 @@ print(f"Distance between cities: {distance:.1f}km")
 
 # Find nearby cities (simple usage)
 cities = db.get_nearby_cities(
-    latitude=40.7128, 
+    latitude=40.7128,
     longitude=-74.0060,
     radius_km=100,
     limit=10
@@ -178,10 +170,10 @@ from aigeodb.django import CityField, CountryField
 class Location(models.Model):
     city = CityField()
     country = CountryField()
-    
+
     # Fields can be optional
     departure_city = CityField(null=True, blank=True)
-    
+
     def __str__(self):
         return f"{self.city.name}, {self.country.name}"
 ```
@@ -283,6 +275,16 @@ The package includes:
 - `aigeodb/css/autocomplete-theme.css` - Theme styles with dark mode
 
 These files are automatically included when using `AutocompleteFieldsMixin`.
+
+---
+
+## About
+
+Developed by [Unrealos Inc.](https://unrealos.com/) - We create innovative SaaS and PaaS solutions powered by AI for business. Our expertise includes:
+- AI-powered business solutions
+- SaaS platforms
+- PaaS infrastructure
+- Custom enterprise software
 
 ## License
 
