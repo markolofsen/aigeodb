@@ -85,7 +85,7 @@ ipython_config.py
 *.iws
 
 # VSCode
-.vscode/
+# .vscode/
 
 # macOS
 .DS_Store

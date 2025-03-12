@@ -10,6 +10,7 @@ class DeployManager:
     def __init__(self):
         self.root_dir = Path(__file__).parent
         self.package_name = self._get_package_name()
+        self.current_version = self._get_current_version()
         self.style = questionary.Style(
             [
                 ("question", "fg:cyan bold"),
@@ -24,7 +25,7 @@ class DeployManager:
             ]
         )
 
-        # Определяем группы команд
+        # Defining command groups
         self.commands = {
             "Development": {
                 "Check Environment": self.check_environment,
@@ -39,8 +40,8 @@ class DeployManager:
             },
             "Package Management": {
                 "Build Package": self.build_package,
-                "Upload to TestPyPI": self.upload_to_testpypi,
-                "Upload to PyPI": self.upload_to_pypi,
+                f"Upload to TestPyPI (v{self.current_version})": self.upload_to_testpypi,
+                f"Upload to PyPI (v{self.current_version})": self.upload_to_pypi,
                 "Clean Builds": self.clean_builds,
             },
         }
@@ -48,14 +49,12 @@ class DeployManager:
     def _get_package_name(self) -> str:
         """Get package name from setup.cfg."""
         setup_cfg = self.root_dir / "setup.cfg"
-        if not setup_cfg.exists():
-            return "aigeodb"  # fallback default
-
+        
         with open(setup_cfg) as f:
             for line in f:
                 if line.startswith("name = "):
                     return line.split("=")[1].strip()
-        return "aigeodb"  # fallback default
+        raise ValueError("Package name not found in setup.cfg")
 
     def run_command(
         self, command: str, description: str = "", check: bool = True
@@ -183,7 +182,6 @@ class DeployManager:
 
         return self.run_command("twine upload dist/*", "Uploading to PyPI")
 
-
     def update_version(self) -> bool:
         """Update package version."""
         current_version = self._get_current_version()
@@ -230,9 +228,11 @@ class DeployManager:
 
     def _update_version_in_files(self, new_version: str) -> None:
         """Update version in configuration files."""
+        module_name = self.package_name
+
         files_to_update = {
             "setup.cfg": (r"version = .*", f"version = {new_version}"),
-            "src/aigeodb/__init__.py": (
+            f"src/{module_name}/__init__.py": (
                 r'__version__ = ".*"',
                 f'__version__ = "{new_version}"',
             ),

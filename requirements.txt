@@ -4,6 +4,7 @@ build
 pytest
 pytest-cov
 flake8
+questionary
 
 geopy
 peewee
