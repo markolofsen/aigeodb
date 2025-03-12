@@ -74,8 +74,13 @@ def main():
 
     # Example 6: Get nearby cities
     print_section("Nearby Cities Example")
-    print("\nCities within 50km of Tokyo (35.6762, 139.6503):")
-    nearby = db.get_nearby_cities(35.6762, 139.6503, radius_km=50, limit=5)
+    print("\nCities near Bali: (-8.409518, 115.188919)")
+    nearby = db.get_nearby_cities(
+        latitude=-8.409518,
+        longitude=115.188919,
+        radius_km=50,
+        limit=5
+    )
     for city in nearby:
         print(f"{city.name}, {city.state_code} ({city.latitude}, {city.longitude})")
 
