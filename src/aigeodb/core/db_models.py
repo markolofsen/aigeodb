@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 
 # Peewee imports
 import peewee as pw
@@ -9,15 +9,13 @@ database = pw.SqliteDatabase(None)
 
 
 # Base model for all models
-class BaseModel(pw.Model):
+class DBBaseModel(pw.Model):
     class Meta:
         database = database
 
 
 # ORM Models
-
-
-class Country(BaseModel):
+class DBCountry(DBBaseModel):
     id = pw.AutoField(primary_key=True)
     name = pw.CharField(max_length=100, null=False)
     iso3 = pw.CharField(max_length=3, null=True)
@@ -42,7 +40,7 @@ class Country(BaseModel):
     emoji = pw.CharField(max_length=191, null=True)
     emojiU = pw.CharField(max_length=191, null=True)
     created_at = pw.DateTimeField(null=True)
-    updated_at = pw.DateTimeField(default=datetime.utcnow)
+    updated_at = pw.DateTimeField(default=lambda: datetime.now(UTC))
     flag = pw.BooleanField(default=True)
     wikiDataId = pw.CharField(max_length=255, null=True)
 
@@ -50,12 +48,12 @@ class Country(BaseModel):
         table_name = 'countries'
 
 
-class Region(BaseModel):
+class DBRegion(DBBaseModel):
     id = pw.AutoField(primary_key=True)
     name = pw.CharField(max_length=100, null=False)
     translations = pw.TextField(null=True)
     created_at = pw.DateTimeField(null=True)
-    updated_at = pw.DateTimeField(default=datetime.utcnow)
+    updated_at = pw.DateTimeField(default=datetime.now(UTC))
     flag = pw.BooleanField(default=True)
     wikiDataId = pw.CharField(max_length=255, null=True)
 
@@ -63,13 +61,13 @@ class Region(BaseModel):
         table_name = 'regions'
 
 
-class Subregion(BaseModel):
+class DBSubregion(DBBaseModel):
     id = pw.AutoField(primary_key=True)
     name = pw.CharField(max_length=100, null=False)
     translations = pw.TextField(null=True)
-    region_id = pw.ForeignKeyField(Region, column_name='region_id', null=False)
+    region_id = pw.ForeignKeyField(DBRegion, column_name='region_id', null=False)
     created_at = pw.DateTimeField(null=True)
-    updated_at = pw.DateTimeField(default=datetime.utcnow)
+    updated_at = pw.DateTimeField(default=datetime.now(UTC))
     flag = pw.BooleanField(default=True)
     wikiDataId = pw.CharField(max_length=255, null=True)
 
@@ -77,11 +75,11 @@ class Subregion(BaseModel):
         table_name = 'subregions'
 
 
-class State(BaseModel):
+class DBState(DBBaseModel):
     id = pw.AutoField(primary_key=True)
     name = pw.CharField(max_length=255, null=False)
     country = pw.ForeignKeyField(
-        Country, column_name='country_id', backref='states', null=False
+        DBCountry, column_name='country_id', backref='states', null=False
     )
     country_code = pw.CharField(max_length=2, null=False)
     fips_code = pw.CharField(max_length=255, null=True)
@@ -92,7 +90,7 @@ class State(BaseModel):
     latitude = pw.FloatField(null=True)
     longitude = pw.FloatField(null=True)
     created_at = pw.DateTimeField(null=True)
-    updated_at = pw.DateTimeField(default=datetime.utcnow)
+    updated_at = pw.DateTimeField(default=datetime.now(UTC))
     flag = pw.BooleanField(default=True)
     wikiDataId = pw.CharField(max_length=255, null=True)
 
@@ -100,21 +98,21 @@ class State(BaseModel):
         table_name = 'states'
 
 
-class City(BaseModel):
+class DBCity(DBBaseModel):
     id = pw.AutoField(primary_key=True)
     name = pw.CharField(max_length=255, null=False)
     state = pw.ForeignKeyField(
-        State, column_name='state_id', backref='cities', null=False
+        DBState, column_name='state_id', backref='cities', null=False
     )
     state_code = pw.CharField(max_length=255, null=False)
     country = pw.ForeignKeyField(
-        Country, column_name='country_id', backref='cities', null=False
+        DBCountry, column_name='country_id', backref='cities', null=False
     )
     country_code = pw.CharField(max_length=2, null=False)
     latitude = pw.FloatField(null=False)
     longitude = pw.FloatField(null=False)
-    created_at = pw.DateTimeField(default=datetime.utcnow)
-    updated_at = pw.DateTimeField(default=datetime.utcnow)
+    created_at = pw.DateTimeField(default=datetime.now(UTC))
+    updated_at = pw.DateTimeField(default=datetime.now(UTC))
     flag = pw.BooleanField(default=True)
     wikiDataId = pw.CharField(max_length=255, null=True)
 

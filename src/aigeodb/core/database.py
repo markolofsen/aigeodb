@@ -1,17 +1,43 @@
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Sequence, TypeVar, Type
 
 from geopy.distance import geodesic
-
 # Import models
-from .models import BaseModel, City, Country, Region, State, Subregion, database
+from .db_models import (
+    DBBaseModel,
+    DBCity,
+    DBCountry,
+    DBRegion,
+    DBState,
+    DBSubregion,
+    database,
+)
+from .py_models import (
+    CityDTO,
+    CountryDTO,
+    RegionDTO,
+    StateDTO,
+    SubregionDTO,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+ModelT = TypeVar('ModelT', DBCity, DBCountry, DBRegion, DBState, DBSubregion)
+PydanticT = TypeVar('PydanticT', CityDTO, CountryDTO, RegionDTO, StateDTO, SubregionDTO)
+
 
 class DatabaseManager:
+    # Model mapping dictionary
+    MODEL_MAPPING = {
+        DBCity: CityDTO,
+        DBCountry: CountryDTO,
+        DBRegion: RegionDTO,
+        DBState: StateDTO,
+        DBSubregion: SubregionDTO,
+    }
+
     def __init__(self, db_name: str = "world"):
         """
         Initialize database connection
@@ -37,20 +63,34 @@ class DatabaseManager:
             database.close()
         database.connect()
 
+    def _convert_to_pydantic(
+        self, peewee_model: DBBaseModel, pydantic_model: Type[PydanticT]
+    ) -> PydanticT:
+        """Convert a Peewee model instance to a Pydantic model"""
+        data = peewee_model.__data__.copy()
+
+        # Handle invalid dates
+        if 'created_at' in data and data['created_at'] == '0000-00-00 00:00:00':
+            data['created_at'] = None
+        if 'updated_at' in data and data['updated_at'] == '0000-00-00 00:00:00':
+            data['updated_at'] = None
+
+        return pydantic_model(**data)
+
     def query(
         self,
-        model: BaseModel,
+        model: Type[ModelT],
         filters: Optional[Dict[str, Any]] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
-    ) -> List[BaseModel]:
+    ) -> Sequence[Any]:
         """
         Generic query method
         :param model: Peewee model class
         :param filters: Dictionary of filters {column_name: value}
         :param limit: Maximum number of records to return
         :param offset: Number of records to skip
-        :return: List of model instances
+        :return: List of Pydantic model instances
         """
         try:
             query = model.select()
@@ -72,15 +112,19 @@ class DatabaseManager:
             if limit:
                 query = query.limit(limit)
 
-            return list(query)
+            pydantic_model = self.MODEL_MAPPING[model]
+            return [self._convert_to_pydantic(item, pydantic_model) for item in query]
         except Exception as e:
             logger.error(f"Query error: {e}")
             raise e
 
     def search(
-        self, model: BaseModel, term: str, fields: List[str],
+        self,
+        model: Type[ModelT],
+        term: str,
+        fields: List[str],
         limit: Optional[int] = None
-    ) -> List[BaseModel]:
+    ) -> Sequence[Any]:
         """
         Search records by term in specified fields using OR condition
 
@@ -91,7 +135,7 @@ class DatabaseManager:
             limit: Maximum number of records to return
 
         Returns:
-            List of matching records where ANY of the fields match the term
+            Sequence of matching Pydantic model instances
         """
         try:
             # Clean and validate search term
@@ -122,50 +166,38 @@ class DatabaseManager:
             if limit:
                 query = query.limit(limit)
 
-            return list(query)
+            pydantic_model = self.MODEL_MAPPING[model]
+            return [self._convert_to_pydantic(item, pydantic_model) for item in query]
 
         except Exception as e:
             logger.error(f"Search error: {e}")
             raise e
 
-    def get_cities_by_country(self, country_code: str) -> List[City]:
+    def get_cities_by_country(self, country_code: str) -> Sequence[CityDTO]:
         """Get all cities for a specific country"""
-        return self.query(City, filters={"country_code": country_code})
+        return self.query(DBCity, filters={"country_code": country_code})
 
-    def get_states_by_country(self, country_code: str) -> List[State]:
+    def get_states_by_country(self, country_code: str) -> Sequence[StateDTO]:
         """Get all states for a specific country"""
-        return self.query(State, filters={"country_code": country_code})
+        return self.query(DBState, filters={"country_code": country_code})
 
-    def search_cities(self, term: str, limit: int = 10) -> List[City]:
+    def search_cities(self, term: str, limit: int = 10) -> Sequence[CityDTO]:
         """Search cities by name"""
-        return self.search(City, term, ["name"], limit)
+        return self.search(DBCity, term, ["name"], limit)
 
-    def search_countries(self, term: str, limit: int = 10) -> List[Country]:
+    def search_countries(self, term: str, limit: int = 10) -> Sequence[CountryDTO]:
         """Search countries by name"""
-        return self.search(Country, term, ["name", "iso2", "iso3"], limit)
+        return self.search(DBCountry, term, ["name", "iso2", "iso3"], limit)
 
     def get_country_info(self, country_code: str) -> Optional[Dict[str, Any]]:
         """Get detailed information about a country"""
         try:
-            country = Country.select().where(Country.iso2 == country_code).first()
+            country = DBCountry.select().where(DBCountry.iso2 == country_code).first()
             if not country:
                 return None
 
-            return {
-                "id": country.id,
-                "name": country.name,
-                "iso2": country.iso2,
-                "iso3": country.iso3,
-                "capital": country.capital,
-                "currency": country.currency,
-                "currency_symbol": country.currency_symbol,
-                "region": country.region,
-                "subregion": country.subregion,
-                "timezones": country.timezones,
-                "latitude": country.latitude,
-                "longitude": country.longitude,
-                "emoji": country.emoji,
-            }
+            country_model = self._convert_to_pydantic(country, CountryDTO)
+            return country_model.dict()
         except Exception as e:
             logger.error(f"Error getting country info: {e}")
             raise e
@@ -176,7 +208,7 @@ class DatabaseManager:
         longitude: float,
         radius_km: float = 100,
         limit: int = 10,
-    ) -> List[City]:
+    ) -> Sequence[CityDTO]:
         """
         Get cities within a radius of a point, sorted by distance.
 
@@ -187,22 +219,22 @@ class DatabaseManager:
             limit: Maximum number of results
 
         Returns:
-            List[City]: List of cities sorted by distance from the given point
+            Sequence of cities sorted by distance from the given point
         """
         try:
             # First get approximate results using bounding box
             degree_radius = radius_km / 111.0
 
             candidates = (
-                City.select()
+                DBCity.select()
                 .where(
-                    City.latitude.between(
+                    DBCity.latitude.between(
                         latitude - degree_radius, latitude + degree_radius
                     ),
-                    City.longitude.between(
+                    DBCity.longitude.between(
                         longitude - degree_radius, longitude + degree_radius
                     ),
-                    City.flag,
+                    DBCity.flag,
                 )
                 .execute()
             )
@@ -221,7 +253,7 @@ class DatabaseManager:
             results = cities_with_distances[:limit]
 
             # Return only the cities, sorted by distance
-            return [city for city, _ in results]
+            return [self._convert_to_pydantic(city, CityDTO) for city, _ in results]
 
         except Exception as e:
             logger.error(f"Error getting nearby cities: {e}")
@@ -231,11 +263,11 @@ class DatabaseManager:
         """Get count of records in each table"""
         try:
             return {
-                "countries": Country.select().count(),
-                "regions": Region.select().count(),
-                "subregions": Subregion.select().count(),
-                "states": State.select().count(),
-                "cities": City.select().count(),
+                "countries": DBCountry.select().count(),
+                "regions": DBRegion.select().count(),
+                "subregions": DBSubregion.select().count(),
+                "states": DBState.select().count(),
+                "cities": DBCity.select().count(),
             }
         except Exception as e:
             logger.error(f"Error getting statistics: {e}")
@@ -256,28 +288,38 @@ class DatabaseManager:
             logger.error(f"Error calculating distance: {e}")
             return float("inf")  # Return infinity on error
 
-    def get_by_id(self, model: BaseModel, id: int) -> Optional[BaseModel]:
+    def __get_by_id(self, model: Type[ModelT], id: int) -> Optional[PydanticT]:
         """
         Get model instance by ID
         :param model: Peewee model class
         :param id: ID of the record
-        :return: Model instance or None
+        :return: Pydantic model instance or None
         """
         try:
-            return model.get_or_none(model.id == id)
+            instance = model.get_or_none(model.id == id)
+            if not instance:
+                return None
+
+            pydantic_model = self.MODEL_MAPPING[model]
+            try:
+                return self._convert_to_pydantic(instance, pydantic_model)
+            except Exception as e:
+                logger.error(f"Error converting model: {e}")
+                return None
+
         except Exception as e:
             logger.error(f"Error getting record by ID: {e}")
             return None
 
-    def get_city_by_id(self, city_id: int) -> Optional[City]:
+    def get_city_by_id(self, city_id: int) -> Optional[CityDTO]:
         """
         Get city by ID
         :param city_id: City ID
         :return: City instance or None
         """
-        return self.get_by_id(City, city_id)
+        return self.__get_by_id(DBCity, city_id)
 
-    def get_country_by_id(self, country_id: int) -> Optional[Country]:
+    def get_country_by_id(self, country_id: int) -> Optional[CountryDTO]:
         """
         Get country by ID
         :param country_id: Country ID
@@ -289,12 +331,12 @@ class DatabaseManager:
                 return self.get_country_by_code(country_id)
             else:
                 # Otherwise, use the numeric ID
-                return Country.get_or_none(Country.id == country_id)
+                return self.__get_by_id(DBCountry, country_id)
         except Exception as e:
             logger.error(f"Error getting country by ID: {e}")
             return None
 
-    def get_country_by_code(self, country_code: str) -> Optional[Country]:
+    def get_country_by_code(self, country_code: str) -> Optional[CountryDTO]:
         """
         Get country by ISO2 code
         :param country_code: ISO2 country code (2 letters)
@@ -302,21 +344,24 @@ class DatabaseManager:
         """
         try:
             code = str(country_code).upper()
-            return Country.get_or_none(Country.iso2 == code)
+            country = DBCountry.get_or_none(DBCountry.iso2 == code)
+            if country:
+                return self._convert_to_pydantic(country, CountryDTO)
+            return None
         except Exception as e:
             logger.error(f"Error getting country by code: {e}")
             return None
 
-    def get_all_cities(self) -> List[City]:
+    def get_all_cities(self) -> Sequence[CityDTO]:
         """
         Get all cities
         :return: List of all cities
         """
-        return list(City.select().where(City.flag))
+        return self.query(DBCity, filters={"flag": True})
 
-    def get_all_countries(self) -> List[Country]:
+    def get_all_countries(self) -> Sequence[CountryDTO]:
         """
         Get all countries
         :return: List of all countries
         """
-        return list(Country.select().where(Country.flag))
+        return self.query(DBCountry, filters={"flag": True})
